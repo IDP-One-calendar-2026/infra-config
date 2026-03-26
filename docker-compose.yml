@@ -1,6 +1,6 @@
 networks:
   auth-network:
-    driver: bridge
+    driver: overlay
 
 services:
   kong:
@@ -14,6 +14,8 @@ services:
       KONG_DECLARATIVE_CONFIG: "/usr/local/kong/declarative/kong.yaml"
     volumes:
       - ./kong.yaml:/usr/local/kong/declarative/kong.yaml:ro
+    deploy:
+      replicas: 1
 
   auth-service:
     image: ghcr.io/idp-one-calendar-2026/auth-service:latest
@@ -27,3 +29,5 @@ services:
       - auth-network
     volumes:
       - /var/lib/auth_data:/app/data
+    deploy:
+      replicas: 1
