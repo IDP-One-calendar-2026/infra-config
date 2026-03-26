@@ -1,0 +1,31 @@
+version: '3.8'
+
+networks:
+  auth-network:
+    driver: bridge
+
+services:
+  kong:
+    image: kong:latest
+    networks:
+      - auth-network
+    ports:
+      - "8000:8000"
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: "/usr/local/kong/declarative/kong.yaml"
+    volumes:
+      - ./kong.yaml:/usr/local/kong/declarative/kong.yaml:ro
+
+  auth-service:
+    image: ghcr.io/idp-one-calendar-2026/auth-service:latest
+    environment:
+      - DATABASE_URL=./auth.db
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - BETTER_AUTH_URL=${BETTER_AUTH_URL}
+      - VITE_UI_URL=${VITE_UI_URL}
+      - VITE_API_URL=${VITE_API_URL}
+    networks:
+      - auth-network
+    volumes:
+      - /var/lib/auth_data:/app/data
