@@ -12,15 +12,16 @@ services:
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: "/usr/local/kong/declarative/kong.yaml"
-    volumes:
-      - ./kong.yaml:/usr/local/kong/declarative/kong.yaml:ro
+    configs:
+      - source: kong_config
+        target: /usr/local/kong/declarative/kong.yaml
     deploy:
       replicas: 1
 
   auth-service:
     image: ghcr.io/idp-one-calendar-2026/auth-service:latest
     environment:
-      - DATABASE_URL=./auth.db
+      - DATABASE_URL=/data/auth.db
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
       - VITE_UI_URL=${VITE_UI_URL}
@@ -28,6 +29,13 @@ services:
     networks:
       - auth-network
     volumes:
-      - /var/lib/auth_data:/app/data
+      - auth_data:/app/data
     deploy:
       replicas: 1
+
+configs:
+  kong_config:
+    file: ./kong.yaml
+
+volumes:
+  auth_data:
