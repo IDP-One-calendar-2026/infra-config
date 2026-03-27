@@ -6,8 +6,8 @@ services:
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: "/usr/local/kong/declarative/kong.yaml"
-    volumes:
-      - ./kong.yaml:/usr/local/kong/declarative/kong.yaml:ro
+    # volumes:
+    #   - ./kong.yaml:/usr/local/kong/declarative/kong.yaml:ro
     networks:
       - auth-network
     deploy:
