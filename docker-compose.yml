@@ -19,6 +19,7 @@ services:
       BETTER_AUTH_URL: ${BETTER_AUTH_URL}
       VITE_UI_URL: ${VITE_UI_URL}
       VITE_API_URL: ${VITE_API_URL}
+      BETTER_AUTH_TRUSTED_ORIGINS: ${BETTER_AUTH_TRUSTED_ORIGINS}
     volumes:
       - auth_data:/data
     networks:
