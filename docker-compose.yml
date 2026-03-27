@@ -1,13 +1,11 @@
 services:
   kong:
-    image: kong:latest
+    image: ghcr.io/IDP-One-calendar-2026/infra-config/kong:latest
     ports:
       - "8000:8000"
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: "/usr/local/kong/declarative/kong.yaml"
-    # volumes:
-    #   - ./kong.yaml:/usr/local/kong/declarative/kong.yaml:ro
     networks:
       - auth-network
     deploy:
