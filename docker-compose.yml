@@ -1,6 +1,6 @@
 services:
   kong:
-    image: ghcr.io/IDP-One-calendar-2026/infra-config/kong:latest
+    image: ghcr.io/idp-one-calendar-2026/infra-config/kong:latest
     ports:
       - "8000:8000"
     environment:
