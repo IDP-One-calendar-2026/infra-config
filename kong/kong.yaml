@@ -7,8 +7,8 @@ services:
       - name: auth-route
         paths:
           - /auth
-  - name: ui
-    url: http://ui:4173
+  - name: ui-service
+    url: http://ui-service:4173
     routes:
     - name: ui-route
       paths:

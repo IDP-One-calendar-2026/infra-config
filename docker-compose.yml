@@ -31,7 +31,7 @@ services:
         order: stop-first
       restart_policy:
         condition: any
-  ui:
+  ui-service:
     image: ghcr.io/idp-one-calendar-2026/ui:latest
     environment:
       VITE_BETTER_AUTH_URL: ${BETTER_AUTH_URL}
