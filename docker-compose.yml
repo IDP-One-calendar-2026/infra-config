@@ -26,10 +26,32 @@ services:
       - auth-network
     deploy:
       replicas: 1
+      update_config:
+        parallelism: 1
+        order: stop-first
+      restart_policy:
+        condition: any
+  ui:
+    image: ghcr.io/idp-one-calendar-2026/ui:latest
+    environment:
+      VITE_BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+      VITE_API_URL: ${VITE_API_URL}
+    networks:
+      - ui-network
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: stop-first
+      restart_policy:
+        condition: any
+
 
 volumes:
   auth_data:
 
 networks:
+  ui-network:
+    driver: overlay
   auth-network:
     driver: overlay

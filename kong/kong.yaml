@@ -7,6 +7,12 @@ services:
       - name: auth-route
         paths:
           - /auth
+  - name: ui
+    url: http://ui:4173
+    routes:
+    - name: ui-route
+      paths:
+        - /
 
 plugins:
   - name: cors
