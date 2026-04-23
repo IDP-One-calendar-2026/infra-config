@@ -13,6 +13,8 @@ RUN mkdir -p /usr/local/kong/declarative && \
 
 COPY --chown=kong:kong kong.template.yaml /usr/local/kong/declarative/kong.template.yaml
 
+RUN cp /docker-entrypoint.sh /docker-entrypoint-kong.sh
+
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
