@@ -7,6 +7,12 @@ services:
       - name: auth-route
         paths:
           - /auth
+  - name: db-manage-auth-service
+    url: http://auth-service:4983
+    routes:
+      - name: db-manage-auth-route
+        paths:
+          - /db-manage-auth
   - name: ui-service
     url: http://ui-service:4173
     routes:
