@@ -1,6 +1,10 @@
 FROM kong:latest
 
-RUN apt-get update && apt-get install -y gettext-base && rm -rf /var/lib/apt/lists/*
+RUN rm -rf /var/lib/apt/lists/* && \
+    apt-get clean && \
+    apt-get update && \
+    apt-get install -y gettext-base && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY kong.template.yaml /usr/local/kong/declarative/kong.template.yaml
 
