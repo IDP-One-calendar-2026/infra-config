@@ -8,7 +8,7 @@ services:
         paths:
           - /auth
   - name: db-manage-auth-service
-    url: https://local.drizzle.studio/?host=auth-service:4983
+    url: http://auth-service:4983
     routes:
       - name: db-manage-auth-route
         paths:
