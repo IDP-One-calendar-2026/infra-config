@@ -8,7 +8,10 @@ RUN rm -rf /var/lib/apt/lists/* && \
     apt-get install -y gettext-base && \
     rm -rf /var/lib/apt/lists/*
 
-COPY kong.template.yaml /usr/local/kong/declarative/kong.template.yaml
+RUN mkdir -p /usr/local/kong/declarative && \
+    chown -R kong:kong /usr/local/kong/declarative
+
+COPY --chown=kong:kong kong.template.yaml /usr/local/kong/declarative/kong.template.yaml
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
