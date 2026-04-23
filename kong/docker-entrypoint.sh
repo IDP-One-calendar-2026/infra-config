@@ -13,5 +13,5 @@ fi
 envsubst < /usr/local/kong/declarative/kong.template.yaml > "$KONG_CONFIG_PATH"
 export KONG_DECLARATIVE_CONFIG="$KONG_CONFIG_PATH"
 
-# Execute the original Kong entrypoint with all arguments
-exec /entrypoint.sh "$@"
+# Execute container command
+exec "$@"
