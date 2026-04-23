@@ -14,25 +14,25 @@ services:
         paths:
           - /db-manage-auth
         plugins:
-        - name: basic-auth
-          config:
-            hide_credentials: false
-            anonymous: null
-        - name: cors
-          config:
-            origins:
-              - "https://local.drizzle.studio"
-            methods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
-            headers:
-              - Authorization
-              - Content-Type
-              - Accept
-            credentials: true
+          - name: basic-auth
+            config:
+              hide_credentials: false
+              anonymous: null
+          - name: cors
+            config:
+              origins:
+                - "*"
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              headers:
+                - Authorization
+                - Content-Type
+                - Accept
+              credentials: true
   - name: ui-service
     url: http://ui-service:4173
     routes:
