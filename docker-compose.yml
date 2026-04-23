@@ -3,6 +3,9 @@ services:
     image: ghcr.io/idp-one-calendar-2026/infra-config/kong:latest
     ports:
       - "8000:8000"
+      - "8001:8001"
+    env_file:
+      - .env
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: "/usr/local/kong/declarative/kong.yaml"
