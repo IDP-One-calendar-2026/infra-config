@@ -1,5 +1,7 @@
 FROM kong:latest
 
+USER root
+
 RUN rm -rf /var/lib/apt/lists/* && \
     apt-get clean && \
     apt-get update && \
