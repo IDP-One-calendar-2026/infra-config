@@ -69,6 +69,7 @@ services:
 
 volumes:
   auth_data:
+  drizzle-gateway:
 
 networks:
   ui-network:
