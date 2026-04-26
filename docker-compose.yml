@@ -49,7 +49,6 @@ services:
       - auth_data:/data:ro
       - drizzle-gateway:/app
     networks:
-      - auth-admin-network
       - auth-network
   ui-service:
     image: ghcr.io/idp-one-calendar-2026/ui:latest
