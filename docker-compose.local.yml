@@ -1,6 +1,9 @@
 services:
   kong:
-    image: ghcr.io/idp-one-calendar-2026/infra-config/kong:latest
+    build:
+      context: ./kong
+      dockerfile: Dockerfile
+    image: infra-config-kong:local
     ports:
       - "8000:8000"
       - "8001:8001"
@@ -12,11 +15,17 @@ services:
     networks:
       - auth-network
       - ui-network
+      - business-logic-network
+      - auth-admin-network
     deploy:
       replicas: 1
 
   auth-service:
-    image: ghcr.io/idp-one-calendar-2026/auth-service:latest
+    # image: ghcr.io/idp-one-calendar-2026/auth-service:latest
+    build:
+      context: ../auth-service
+      dockerfile: Dockerfile
+    image: auth-service:local
     environment:
       DATABASE_URL: "file:/data/auth.db"
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
@@ -35,24 +44,28 @@ services:
         order: stop-first
       restart_policy:
         condition: any
-
+  
   drizzle-gateway:
     image: ghcr.io/drizzle-team/gateway:latest
     restart: always
     ports:
       - "4983:4983"
     environment:
-      PORT: 4983
+      PORT: "4983"
       STORE_PATH: "/app"
       MASTERPASS: ${ADMIN_PASSWORD}
     volumes:
-      - auth_data:/data:ro
+      - auth_data:/data
       - drizzle-gateway:/app
     networks:
       - auth-admin-network
       - auth-network
   ui-service:
-    image: ghcr.io/idp-one-calendar-2026/ui:latest
+    # image: ghcr.io/idp-one-calendar-2026/ui:latest
+    build:
+      context: ../ui
+      dockerfile: Dockerfile
+    image: ui-service:local
     environment:
       VITE_BETTER_AUTH_URL: ${BETTER_AUTH_URL}
       VITE_API_URL: ${VITE_API_URL}
@@ -66,12 +79,47 @@ services:
       restart_policy:
         condition: any
 
+  # io-service:
+  #   image: ghcr.io/idp-one-calendar-2026/io-service:latest
+  #   environment:
+  #     DB_USER: ${DB_USER_IO_SERVICE}
+  #     DB_PASSWORD: ${DB_PASSWORD_IO_SERVICE}
+  #     DB_NAME: ${DB_NAME_IO_SERVICE}
+  #     DB_HOST: ${DB_HOST_IO_SERVICE}
+  #     DB_PORT: ${DB_PORT_IO_SERVICE}
+  #     PORT: ${PORT_IO_SERVICE}
+  #   networks:
+  #     - io-network
+  #     - business-logic-network
+
+  # business-logic-service:
+  #   image: ghcr.io/idp-one-calendar-2026/business-logic-service:latest
+  #   environment:
+  #     IO_SERVICE_URL: ${IO_SERVICE_URL}
+  #   networks:
+  #     - io-network
+  #     - business-logic-network
+  #     - auth-network
+  #   deploy:
+  #     replicas: 1
+  #     update_config:
+  #       parallelism: 1
+  #       order: stop-first
+  #     restart_policy:
+  #       condition: any
 
 volumes:
   auth_data:
+  drizzle-gateway:
 
 networks:
+  io-network:
+    driver: bridge
+  business-logic-network:
+    driver: bridge
   ui-network:
-    driver: overlay
+    driver: bridge
   auth-network:
-    driver: overlay
+    driver: bridge
+  auth-admin-network:
+    driver: bridge
