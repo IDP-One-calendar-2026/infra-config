@@ -75,7 +75,7 @@ jobs:
           cache-to: type=gha,mode=max
   deploy:
     needs: build  # Wait for build to complete
-    runs-on: [self-hosted, production, portainer-deploy]  # Your runner labels
+    runs-on: self-hosted  # Your runner labels
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'  # Only deploy main branch, not PRs
     steps:
       - name: Deploy to Portainer via Webhook
