@@ -12,6 +12,7 @@ services:
     networks:
       - auth-network
       - ui-network
+      - business-logic-network
     deploy:
       replicas: 1
 
@@ -65,12 +66,44 @@ services:
       restart_policy:
         condition: any
 
+  io-service:
+    image: ghcr.io/idp-one-calendar-2026/io-service:latest
+    environment:
+      DB_USER: ${DB_USER_IO_SERVICE}
+      DB_PASSWORD: ${DB_PASSWORD_IO_SERVICE}
+      DB_NAME: ${DB_NAME_IO_SERVICE}
+      DB_HOST: ${DB_HOST_IO_SERVICE}
+      DB_PORT: ${DB_PORT_IO_SERVICE}
+      PORT: ${PORT_IO_SERVICE}
+    networks:
+      - io-network
+      - business-logic-network
+
+  business-logic-service:
+    image: ghcr.io/idp-one-calendar-2026/business-logic-service:latest
+    environment:
+      IO_SERVICE_URL: ${IO_SERVICE_URL}
+    networks:
+      - io-network
+      - business-logic-network
+      - auth-network
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: stop-first
+      restart_policy:
+        condition: any
 
 volumes:
   auth_data:
   drizzle-gateway:
 
 networks:
+  io-network:
+    driver: overlay
+  business-logic-network:
+    driver: overlay
   ui-network:
     driver: overlay
   auth-network:
