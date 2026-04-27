@@ -1,0 +1,90 @@
+name: Deploy Portainer stack on compose changes
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docker-compose.yml"
+      - "docker-compose.local.yml"
+      - ".github/workflows/deploy-compose-stack.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate docker compose files
+        run: |
+          docker compose -f docker-compose.yml config >/dev/null
+          docker compose -f docker-compose.local.yml config >/dev/null
+
+      - name: Trigger Portainer stack deployment webhook
+        env:
+          PORTAINER_STACK_WEBHOOK_SECRET: ${{ secrets.PORTAINER_STACK_WEBHOOK_URL }}
+        run: |
+          WEBHOOK_URL="${PORTAINER_STACK_WEBHOOK_SECRET:-${PORTAINER_STACK_WEBHOOK_URL:-}}"
+
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "❌ Missing Portainer stack webhook URL."
+            echo "Set either repository secret PORTAINER_STACK_WEBHOOK_URL"
+            echo "or runner environment variable PORTAINER_STACK_WEBHOOK_URL."
+            exit 1
+          fi
+
+          response=""
+          curl_exit=0
+
+          set +e
+          response=$(curl -sS -L -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            --data '{}' \
+            --connect-timeout 10 \
+            --max-time 30 \
+            --retry 2 \
+            --retry-delay 2 \
+            -w "HTTPSTATUS:%{http_code}")
+          curl_exit=$?
+          set -e
+
+          # curl exit code 60 = TLS certificate verify failed (common with internal/self-signed certs)
+          if [ "$curl_exit" -eq 60 ]; then
+            echo "⚠️ TLS verification failed. Retrying with --insecure."
+            set +e
+            response=$(curl -sS -L -X POST "$WEBHOOK_URL" \
+              -H "Content-Type: application/json" \
+              --data '{}' \
+              --connect-timeout 10 \
+              --max-time 30 \
+              --retry 2 \
+              --retry-delay 2 \
+              --insecure \
+              -w "HTTPSTATUS:%{http_code}")
+            curl_exit=$?
+            set -e
+          fi
+
+          if [ "$curl_exit" -ne 0 ]; then
+            echo "❌ Portainer webhook request failed before HTTP response (curl exit: $curl_exit)"
+            exit 1
+          fi
+
+          http_status=$(printf '%s' "$response" | sed -e 's/.*HTTPSTATUS://')
+          response_body=$(printf '%s' "$response" | sed -e 's/HTTPSTATUS:.*//')
+
+          if [ "$http_status" -ne 200 ] && [ "$http_status" -ne 202 ] && [ "$http_status" -ne 204 ]; then
+            echo "❌ Portainer webhook failed with HTTP status: $http_status"
+            if [ -n "$response_body" ]; then
+              echo "Response body:"
+              echo "$response_body"
+            fi
+            exit 1
+          fi
+
+          echo "✅ Portainer stack deployment webhook triggered (HTTP $http_status)"
