@@ -15,6 +15,11 @@ services:
       - business-logic-network
     deploy:
       replicas: 1
+      update_config:
+        parallelism: 1
+        order: stop-first
+      restart_policy:
+        condition: any
 
   auth-service:
     image: ghcr.io/idp-one-calendar-2026/auth-service:latest
@@ -51,6 +56,14 @@ services:
       - drizzle-gateway:/app
     networks:
       - auth-network
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: stop-first
+      restart_policy:
+        condition: any
+
   ui-service:
     image: ghcr.io/idp-one-calendar-2026/ui:latest
     environment:
@@ -69,17 +82,24 @@ services:
   io-service:
     image: ghcr.io/idp-one-calendar-2026/io-service:latest
     environment:
-      DB_USER: ${DB_USER_IO_SERVICE}
-      DB_PASSWORD: ${DB_PASSWORD_IO_SERVICE}
-      DB_NAME: ${DB_NAME_IO_SERVICE}
-      DB_HOST: ${DB_HOST_IO_SERVICE}
-      DB_PORT: ${DB_PORT_IO_SERVICE}
-      PORT: ${PORT_IO_SERVICE}
+      DB_USER_IO_SERVICE: ${DB_USER_IO_SERVICE}
+      DB_PASSWORD_IO_SERVICE: ${DB_PASSWORD_IO_SERVICE}
+      DB_NAME_IO_SERVICE: ${DB_NAME_IO_SERVICE}
+      DB_HOST_IO_SERVICE: ${DB_HOST_IO_SERVICE}
+      DB_PORT_IO_SERVICE: ${DB_PORT_IO_SERVICE}
+      PORT_IO_SERVICE: ${PORT_IO_SERVICE}
     networks:
       - io-network
       - business-logic-network
     volumes:
-      - io_service_db_data:/var/lib/postgresql/data
+      - io_service_db_data:/var/lib/postgresql
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: stop-first
+      restart_policy:
+        condition: any
 
   io-service-db:
     image: postgres:18-alpine
@@ -89,6 +109,13 @@ services:
       POSTGRES_DB: ${DB_NAME_IO_SERVICE}
     networks:
       - io-network
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: stop-first
+      restart_policy:
+        condition: any
 
   business-logic-service:
     image: ghcr.io/idp-one-calendar-2026/business-logic-service:latest
