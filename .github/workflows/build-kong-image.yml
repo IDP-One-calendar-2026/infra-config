@@ -81,16 +81,75 @@ jobs:
       - name: Deploy to Portainer via Webhook
         run: |
           echo "Deploying image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.short-sha }}"
-          
-          # Trigger Portainer webhook (internal URL only accessible from self-hosted runner)
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X POST "${{ secrets.PORTAINER_KONG_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            --max-time 30)
-          
-          if [ "$HTTP_STATUS" -ne 200 ] && [ "$HTTP_STATUS" -ne 204 ]; then
-            echo "❌ Deployment failed with HTTP status: $HTTP_STATUS"
-            exit 1
-          fi
-          
-          echo "✅ Kong deployment triggered successfully in Portainer"
+
+          trigger_portainer_webhook() {
+            local name="$1"
+            local url="$2"
+
+            if [ -z "$url" ]; then
+              echo "ℹ️  Skipping $name webhook because URL is empty"
+              return 0
+            fi
+
+            echo "➡️  Triggering $name webhook"
+
+            local response
+            local curl_exit
+            local http_status
+            local response_body
+
+            set +e
+            response=$(curl -sS -L -X POST "$url" \
+              -H "Content-Type: application/json" \
+              --data '{}' \
+              --connect-timeout 10 \
+              --max-time 30 \
+              --retry 2 \
+              --retry-delay 2 \
+              -w "HTTPSTATUS:%{http_code}")
+            curl_exit=$?
+            set -e
+
+            # curl exit code 60 = TLS certificate verify failed (common with internal/self-signed certs)
+            if [ "$curl_exit" -eq 60 ]; then
+              echo "⚠️  TLS verification failed for $name webhook. Retrying with --insecure."
+              set +e
+              response=$(curl -sS -L -X POST "$url" \
+                -H "Content-Type: application/json" \
+                --data '{}' \
+                --connect-timeout 10 \
+                --max-time 30 \
+                --retry 2 \
+                --retry-delay 2 \
+                --insecure \
+                -w "HTTPSTATUS:%{http_code}")
+              curl_exit=$?
+              set -e
+            fi
+
+            if [ "$curl_exit" -ne 0 ]; then
+              echo "❌ $name webhook request failed before HTTP response (curl exit: $curl_exit)"
+              exit 1
+            fi
+
+            http_status=$(printf '%s' "$response" | sed -e 's/.*HTTPSTATUS://')
+            response_body=$(printf '%s' "$response" | sed -e 's/HTTPSTATUS:.*//')
+
+            if [ "$http_status" -ne 200 ] && [ "$http_status" -ne 202 ] && [ "$http_status" -ne 204 ]; then
+              echo "❌ $name webhook failed with HTTP status: $http_status"
+              if [ -n "$response_body" ]; then
+                echo "Response body:"
+                echo "$response_body"
+              fi
+              exit 1
+            fi
+
+            echo "✅ $name webhook triggered successfully (HTTP $http_status)"
+          }
+
+          # 1) Trigger Kong-specific deployment webhook
+          trigger_portainer_webhook "Kong deployment" "${{ secrets.PORTAINER_KONG_WEBHOOK_URL }}"
+
+          # 2) Trigger full stack deployment webhook (optional)
+          # Set PORTAINER_STACK_WEBHOOK_URL on the self-hosted runner or as a workflow env var.
+          trigger_portainer_webhook "Portainer stack deployment" "${PORTAINER_STACK_WEBHOOK_URL:-}"
