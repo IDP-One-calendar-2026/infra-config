@@ -56,6 +56,7 @@ services:
       - drizzle-gateway:/app
     networks:
       - auth-network
+      - io-network
     deploy:
       replicas: 1
       update_config:
