@@ -126,6 +126,8 @@ services:
       IO_SERVICE_URL: ${IO_SERVICE_URL}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       AUTH_SERVICE_URL: http://auth-service:3001/auth
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+      VITE_UI_URL: ${VITE_UI_URL}
     networks:
       - io-network
       - business-logic-network
