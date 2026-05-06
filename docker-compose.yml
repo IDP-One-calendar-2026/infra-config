@@ -121,7 +121,10 @@ services:
   business-logic-service:
     image: ghcr.io/idp-one-calendar-2026/business-logic-service:latest
     environment:
+      PORT: ${PORT_BUSINESS_LOGIC}
       IO_SERVICE_URL: ${IO_SERVICE_URL}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      AUTH_SERVICE_URL: http://auth-service:3001/auth
     networks:
       - io-network
       - business-logic-network

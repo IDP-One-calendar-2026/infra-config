@@ -14,7 +14,7 @@ services:
       paths:
         - /
   - name: business-logic-service
-    url: http://business-logic-service:3003
+    url: http://business-logic-service:3000
     routes:
       - name: business-logic-route
         paths:

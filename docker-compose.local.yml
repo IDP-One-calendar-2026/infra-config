@@ -30,6 +30,13 @@ services:
     build:
       context: ../auth-service
       dockerfile: Dockerfile
+      args:
+        BUILD_DATABASE_URL: "file:/data/auth.db"
+        BUILD_AUTH_URL: ${BETTER_AUTH_URL}
+        BUILD_UI_URL: ${VITE_UI_URL}
+        BUILD_API_URL: ${VITE_API_URL}
+        BUILD_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+        BETTER_AUTH_TRUSTED_ORIGINS: ${BETTER_AUTH_TRUSTED_ORIGINS}
     image: auth-service:local
     environment:
       DATABASE_URL: "file:/data/auth.db"
@@ -77,6 +84,10 @@ services:
     build:
       context: ../ui
       dockerfile: Dockerfile
+      args:
+        BUILD_AUTH_URL: ${BETTER_AUTH_URL}
+        BUILD_API_URL: ${VITE_API_URL}
+        BUILD_BUSINESS_LOGIC_URL: /api
     image: ui-service:local
     environment:
       VITE_BETTER_AUTH_URL: ${BETTER_AUTH_URL}
@@ -139,7 +150,10 @@ services:
       dockerfile: Dockerfile
     image: business-logic-service:local
     environment:
+      PORT: ${PORT_BUSINESS_LOGIC}
       IO_SERVICE_URL: ${IO_SERVICE_URL}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      AUTH_SERVICE_URL: http://auth-service:3001/auth
     networks:
       - io-network
       - business-logic-network
