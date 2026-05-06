@@ -70,6 +70,7 @@ services:
     environment:
       VITE_BETTER_AUTH_URL: ${BETTER_AUTH_URL}
       VITE_API_URL: ${VITE_API_URL}
+      VITE_BUSINESS_LOGIC_URL: ${VITE_BUSINESS_LOGIC_URL}
     networks:
       - ui-network
     deploy:
